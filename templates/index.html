@@ -34,6 +34,14 @@
             text-shadow: none;
             text-align: left
         }
+        #table{
+            border-radius: 5px;
+            max-width: 700px;
+            width: 100%;
+            margin: 5% auto;
+            background-color: #FFFFFF;
+            overflow: hidden;
+        }
 
         .form {
             border-radius: 5px;
@@ -131,26 +139,6 @@
             font-size: 13px;
             color: #DE5959;
         }
-
-        #sendmessage {
-            border: 1px solid #fff;
-            display: none;
-            text-align: center;
-            margin: 10px 0;
-            font-weight: 600;
-            margin-bottom: 30px;
-            background-color: #EBF6E0;
-            color: #5F9025;
-            border: 1px solid #B3DC82;
-            padding: 13px 40px 13px 18px;
-            border-radius: 3px;
-            box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.03);
-        }
-
-        #sendmessage.show,
-        .show {
-            display: block;
-        }
     </style>
 </head>
 
@@ -161,7 +149,12 @@
         <h1>Copie o texto de uma notícia, cole na caixa abaixo e clique em "Enviar" </h1>
 
         <div class="contentform">
-            <div id="sendmessage">Enviado</div>
+            <table id="table" border=1>
+                <tr>
+                    <th>Frase</th>
+                    <th>Resultado</th>
+                </tr>
+            </table>
 
 
             <div class="leftcontact">
@@ -176,15 +169,31 @@
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script>
+        $(document).ready(e=>{
+            $('#table').toggle('false');
+        })
         function enviarTexto(e) {
+            var countFato = 0;
+            var countOpniao = 0;
             $.ajax({
                 url: '/alethic/api/v1.0/ia',
                 dataType: 'text',
                 type: 'post',
-                contentType:  'application/json',
-                data: JSON.stringify({'texto':$('#texto').val()}),
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    'texto': $('#texto').val()
+                }),
                 success: function (data, textStatus, jQxhr) {
-                    console.log(data);
+                    var frases = JSON.parse(data);
+                    $('#table').toggle('true');
+                    $.each(frases, (k, v) => {
+                        if (v.resultado == 'OPINIÃO') {
+                            countOpniao++;
+                        } else {
+                            countFato++;
+                        }
+                        $('#table').append(`<tr><td>${v.frase}</td><td>${v.resultado}</td></tr>`)
+                    });
                 },
                 error: function (jqXhr, textStatus, errorThrown) {
                     console.log(errorThrown);
@@ -193,7 +202,7 @@
 
             e.preventDefault();
         }
-        $('#btn-enviar').on('click',enviarTexto);
+        $('#btn-enviar').on('click', enviarTexto);
     </script>
 </body>
 
